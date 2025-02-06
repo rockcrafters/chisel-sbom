@@ -1,8 +1,8 @@
 package converter
 
 import (
+	"fmt"
 	"os"
-	"reflect"
 	"strings"
 
 	"github.com/canonical/chisel/public/jsonwall"
@@ -11,31 +11,6 @@ import (
 	"github.com/rockcrafters/chisel-sbom/internal/builder"
 	"github.com/spdx/tools-golang/spdx"
 )
-
-type ManifestEntry struct {
-	Kind string `json:"kind"`
-}
-
-type ManifestData struct {
-	Packages []manifest.Package
-	Slices   []manifest.Slice
-	Paths    []manifest.Path
-	Content  []manifest.Content
-}
-
-var ManifestStructs = map[string]reflect.Type{
-	"package": reflect.TypeOf(manifest.Package{}),
-	"slice":   reflect.TypeOf(manifest.Slice{}),
-	"path":    reflect.TypeOf(manifest.Path{}),
-	"content": reflect.TypeOf(manifest.Content{}),
-}
-
-var manifestData = ManifestData{
-	Packages: []manifest.Package{},
-	Slices:   []manifest.Slice{},
-	Paths:    []manifest.Path{},
-	Content:  []manifest.Content{},
-}
 
 // Convert converts a JSONWall to an SPDX document.
 func Convert(path string) (*spdx.Document, error) {
@@ -51,20 +26,9 @@ func Convert(path string) (*spdx.Document, error) {
 	defer zstdReader.Close()
 	db, err := jsonwall.ReadDB(zstdReader)
 
-	iter, err := db.Iterate(nil)
-	if err != nil {
-		return nil, err
-	}
-	for iter.Next() {
-		var entry ManifestEntry
-		if err := iter.Get(&entry); err != nil {
-			return nil, err
-		}
-		var value = unmarshalManifestEntry(entry.Kind)
-		if err := iter.Get(&value); err != nil {
-			return nil, err
-		}
-		manifestData.append(entry.Kind, value)
+	manifestData := &ManifestData{}
+	for _, fn := range updateFunctions {
+		fn(db, manifestData)
 	}
 
 	sliceInfos := manifestData.processSlices()
@@ -77,6 +41,13 @@ func Convert(path string) (*spdx.Document, error) {
 	}
 
 	return doc, nil
+}
+
+type ManifestData struct {
+	Packages []manifest.Package
+	Slices   []manifest.Slice
+	Paths    []manifest.Path
+	Content  []manifest.Content
 }
 
 func (md *ManifestData) processSlices() []builder.SliceInfo {
@@ -121,22 +92,39 @@ func (md *ManifestData) processPaths() []builder.PathInfo {
 	return pathInfos
 }
 
-func unmarshalManifestEntry(typeName string) interface{} {
-	if typ, found := ManifestStructs[typeName]; found {
-		return reflect.New(typ).Interface()
+type prefixable interface {
+	manifest.Path | manifest.Content | manifest.Package | manifest.Slice
+}
+
+func iteratePrefix[T prefixable](db *jsonwall.DB, prefix *T, store *[]T) error {
+	iter, err := db.IteratePrefix(prefix)
+	if err != nil {
+		return err
+	}
+	for iter.Next() {
+		var val T
+		err := iter.Get(&val)
+		if err != nil {
+			return fmt.Errorf("cannot read manifest: %s", err)
+		}
+		*store = append(*store, val)
 	}
 	return nil
 }
 
-func (md *ManifestData) append(kind string, value interface{}) {
-	switch kind {
-	case "package":
-		md.Packages = append(md.Packages, *value.(*manifest.Package))
-	case "slice":
-		md.Slices = append(md.Slices, *value.(*manifest.Slice))
-	case "path":
-		md.Paths = append(md.Paths, *value.(*manifest.Path))
-	case "content":
-		md.Content = append(md.Content, *value.(*manifest.Content))
-	}
+type updFnType func(db *jsonwall.DB, data *ManifestData) error
+
+var updateFunctions = []updFnType{
+	func(db *jsonwall.DB, data *ManifestData) error {
+		return iteratePrefix(db, &manifest.Package{Kind: "package"}, &data.Packages)
+	},
+	func(db *jsonwall.DB, data *ManifestData) error {
+		return iteratePrefix(db, &manifest.Slice{Kind: "slice"}, &data.Slices)
+	},
+	func(db *jsonwall.DB, data *ManifestData) error {
+		return iteratePrefix(db, &manifest.Path{Kind: "path"}, &data.Paths)
+	},
+	func(db *jsonwall.DB, data *ManifestData) error {
+		return iteratePrefix(db, &manifest.Content{Kind: "content"}, &data.Content)
+	},
 }
