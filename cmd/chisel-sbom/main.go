@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/klauspost/compress/zstd"
 	"github.com/rockcrafters/chisel-sbom/internal/converter"
 	"github.com/spdx/tools-golang/json"
 )
@@ -36,7 +37,18 @@ func main() {
 	}
 	defer fileOut.Close()
 
-	doc, err := converter.Convert(manifest)
+	fileReader, err := os.Open(manifest)
+	if err != nil {
+		panic(err)
+	}
+	defer fileReader.Close()
+	zstdReader, err := zstd.NewReader(fileReader)
+	if err != nil {
+		panic(err)
+	}
+	defer zstdReader.Close()
+
+	doc, err := converter.Convert(zstdReader)
 	if err != nil {
 		panic(err)
 	}

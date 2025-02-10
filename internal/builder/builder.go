@@ -8,6 +8,8 @@ import (
 	"github.com/spdx/tools-golang/spdx/v2/common"
 )
 
+const EmptySHA256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+
 type PackageInfo struct {
 	Name    string
 	Version string
@@ -15,10 +17,11 @@ type PackageInfo struct {
 }
 
 type PathInfo struct {
-	Path   string
-	Mode   string
-	Slices []string
-	SHA256 string
+	Path        string
+	Mode        string
+	Slices      []string
+	SHA256      string
+	FinalSHA256 string
 }
 
 type SliceInfo struct {
@@ -120,19 +123,39 @@ func (s *SliceInfo) buildSliceSection() (*spdx.Package, *spdx.Relationship, erro
 
 func (f *PathInfo) buildPathSection() (*spdx.File, []*spdx.Relationship, error) {
 	rln := []*spdx.Relationship{}
+	sha256 := f.SHA256
+	if f.FinalSHA256 != "" {
+		sha256 = f.FinalSHA256
+	}
 	file := &spdx.File{
 		FileName:           f.Path,
 		FileSPDXIdentifier: common.ElementID(f.SPDXId()),
-		Checksums:          []common.Checksum{{Algorithm: common.SHA256, Value: f.SHA256}},
+		Checksums:          []common.Checksum{{Algorithm: common.SHA256, Value: sha256}},
 		FileCopyrightText:  "NOASSERTION",
 	}
 	for _, s := range f.Slices {
 		slice := &SliceInfo{Name: s}
-		rln = append(rln, &spdx.Relationship{
-			RefA:         common.MakeDocElementID("", slice.SPDXId()),
-			RefB:         common.MakeDocElementID("", f.SPDXId()),
-			Relationship: "CONTAINS",
-		})
+		if f.FinalSHA256 == "" {
+			rln = append(rln, &spdx.Relationship{
+				RefA:         common.MakeDocElementID("", slice.SPDXId()),
+				RefB:         common.MakeDocElementID("", f.SPDXId()),
+				Relationship: "CONTAINS",
+			})
+			continue
+		}
+		if f.SHA256 == EmptySHA256 {
+			rln = append(rln, &spdx.Relationship{
+				RefA:         common.MakeDocElementID("", slice.SPDXId()),
+				RefB:         common.MakeDocElementID("", f.SPDXId()),
+				Relationship: "GENERATES",
+			})
+		} else {
+			rln = append(rln, &spdx.Relationship{
+				RefA:         common.MakeDocElementID("", f.SPDXId()),
+				RefB:         common.MakeDocElementID("", slice.SPDXId()),
+				Relationship: "FILE_MODIFIED",
+			})
+		}
 	}
 
 	return file, rln, nil
