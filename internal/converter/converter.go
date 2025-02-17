@@ -2,38 +2,30 @@ package converter
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"strings"
 
 	"github.com/canonical/chisel/public/jsonwall"
 	"github.com/canonical/chisel/public/manifest"
-	"github.com/klauspost/compress/zstd"
 	"github.com/rockcrafters/chisel-sbom/internal/builder"
 	"github.com/spdx/tools-golang/spdx"
 )
 
 // Convert converts a JSONWall to an SPDX document.
-func Convert(path string) (*spdx.Document, error) {
-	fileReader, err := os.Open(path)
+func Convert(reader io.Reader) (*spdx.Document, error) {
+	db, err := jsonwall.ReadDB(reader)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cannot read manifest: %s", err)
 	}
-	defer fileReader.Close()
-	zstdReader, err := zstd.NewReader(fileReader)
-	if err != nil {
-		return nil, err
-	}
-	defer zstdReader.Close()
-	db, err := jsonwall.ReadDB(zstdReader)
 
 	manifestData := &ManifestData{}
 	for _, fn := range updateFunctions {
 		fn(db, manifestData)
 	}
 
-	sliceInfos := manifestData.processSlices()
-	packageInfos := manifestData.processPackages()
-	pathInfos := manifestData.processPaths()
+	sliceInfos := manifestData.ProcessSlices()
+	packageInfos := manifestData.ProcessPackages()
+	pathInfos := manifestData.ProcessPaths()
 
 	doc, err := builder.BuildSPDXDocument("test", &sliceInfos, &packageInfos, &pathInfos)
 	if err != nil {
@@ -50,7 +42,7 @@ type ManifestData struct {
 	Content  []manifest.Content
 }
 
-func (md *ManifestData) processSlices() []builder.SliceInfo {
+func (md *ManifestData) ProcessSlices() []builder.SliceInfo {
 	var sliceInfos []builder.SliceInfo
 	for _, s := range md.Slices {
 		var sliceInfo builder.SliceInfo
@@ -60,7 +52,7 @@ func (md *ManifestData) processSlices() []builder.SliceInfo {
 	return sliceInfos
 }
 
-func (md *ManifestData) processPackages() []builder.PackageInfo {
+func (md *ManifestData) ProcessPackages() []builder.PackageInfo {
 	var packageInfos []builder.PackageInfo
 	for _, p := range md.Packages {
 		var packageInfo builder.PackageInfo
@@ -72,7 +64,7 @@ func (md *ManifestData) processPackages() []builder.PackageInfo {
 	return packageInfos
 }
 
-func (md *ManifestData) processPaths() []builder.PathInfo {
+func (md *ManifestData) ProcessPaths() []builder.PathInfo {
 	var pathInfos []builder.PathInfo
 	for _, p := range md.Paths {
 		if strings.HasSuffix(p.Path, "/") {
@@ -82,11 +74,10 @@ func (md *ManifestData) processPaths() []builder.PathInfo {
 		pathInfo.Path = p.Path
 		pathInfo.Mode = p.Mode
 		pathInfo.Slices = p.Slices
-		sha256 := p.SHA256
-		if p.FinalSHA256 != "" {
-			sha256 = p.FinalSHA256
-		}
-		pathInfo.SHA256 = sha256
+		pathInfo.SHA256 = p.SHA256
+		pathInfo.FinalSHA256 = p.FinalSHA256
+		pathInfo.Link = p.Link
+		pathInfo.Inode = p.Inode
 		pathInfos = append(pathInfos, pathInfo)
 	}
 	return pathInfos

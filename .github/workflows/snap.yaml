@@ -1,0 +1,56 @@
+name: Snap
+
+on:
+  push:
+    paths-ignore:
+      - '**.md'
+
+env:
+  SNAP_NAME: chisel-sbom
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      chisel-sbom-snap: ${{ steps.build-chisel-sbom-snap.outputs.snap }}
+
+    steps:
+      - name: Checkout chisel-sbom repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build chisel-sbom Snap
+        id: build-chisel-sbom-snap
+        uses: snapcore/action-build@v1
+
+      - name: Attach chisel snap to GH workflow execution
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.build-chisel-sbom-snap.outputs.snap }}
+          path: ${{ steps.build-chisel-sbom-snap.outputs.snap }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: [build]
+
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.chisel-sbom-snap }}
+
+      - name: Install the chisel snap
+        id: install-chisel-sbom-snap
+        run: |
+          set -ex
+          # Install the chisel-sbom snap from the artifact built in the previous job
+          sudo snap install --dangerous ${{ needs.build.outputs.chisel-sbom-snap }}
+
+          # Make sure chisel-sbom is installed
+          chisel-sbom
+
+      # - name: Run smoke test
+      #   run: |
+      #     set -ex
