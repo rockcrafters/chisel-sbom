@@ -38,6 +38,7 @@ var builerTests = []BuilderTest{
 					},
 					PackageDownloadLocation: "NOASSERTION",
 					PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
+					PackageComment:          "This package includes one or more slice(s); see Relationship information.",
 				},
 			},
 			Relationships: []*spdx.Relationship{
@@ -90,10 +91,10 @@ var builerTests = []BuilderTest{
 			},
 		},
 	}, {
-		summary:      "Builds file section with final SHA256",
+		summary:      "Builds file section with generated file",
 		packageInfos: testutil.SampleSinglePackage,
 		sliceInfos:   testutil.SampleSingleSlice,
-		pathInfos:    testutil.SampleSinglePathWithFinalSHA256,
+		pathInfos:    testutil.SampleSinglePathGenerated,
 		spdxDocument: spdx.Document{
 			SPDXVersion:    spdx.Version,
 			DataLicense:    spdx.DataLicense,
@@ -104,30 +105,7 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileWithFinalSHA256,
-			},
-			Relationships: []*spdx.Relationship{
-				&testutil.SPDXRelSampleSingleDocDescribesPkg,
-				&testutil.SPDXRelSampleSinglePkgContainsSlice,
-				&testutil.SPDXRelSampleSingleFileModifiedBySlice,
-			},
-		},
-	}, {
-		summary:      "Builds file section with final SHA256 and empty file inital SHA256",
-		packageInfos: testutil.SampleSinglePackage,
-		sliceInfos:   testutil.SampleSingleSlice,
-		pathInfos:    testutil.SampleSinglePathWithEmptyFileSHA256,
-		spdxDocument: spdx.Document{
-			SPDXVersion:    spdx.Version,
-			DataLicense:    spdx.DataLicense,
-			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
-			DocumentName:   "test",
-			Packages: []*spdx.Package{
-				&testutil.SPDXDocSampleSinglePackage,
-				&testutil.SPDXDocSampleSingleSlice,
-			},
-			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileWithFinalSHA256,
+				&testutil.SPDXDocSampleSingleFileGenerated,
 			},
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
@@ -136,10 +114,33 @@ var builerTests = []BuilderTest{
 			},
 		},
 	}, {
+		summary:      "Builds file section with modified file",
+		packageInfos: testutil.SampleSinglePackage,
+		sliceInfos:   testutil.SampleSingleSlice,
+		pathInfos:    testutil.SampleSinglePathModified,
+		spdxDocument: spdx.Document{
+			SPDXVersion:    spdx.Version,
+			DataLicense:    spdx.DataLicense,
+			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
+			DocumentName:   "test",
+			Packages: []*spdx.Package{
+				&testutil.SPDXDocSampleSinglePackage,
+				&testutil.SPDXDocSampleSingleSlice,
+			},
+			Files: []*spdx.File{
+				&testutil.SPDXDocSampleSingleFileModified,
+			},
+			Relationships: []*spdx.Relationship{
+				&testutil.SPDXRelSampleSingleDocDescribesPkg,
+				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+				&testutil.SPDXRelSampleSingleFileModifiedBySlice,
+			},
+		},
+	}, {
 		summary:      "Builds doc for one slice with two files",
 		packageInfos: testutil.SampleSinglePackage,
 		sliceInfos:   testutil.SampleSingleSlice,
-		pathInfos: append(testutil.SampleSinglePathWithEmptyFileSHA256,
+		pathInfos: append(testutil.SampleSinglePathGenerated,
 			builder.PathInfo{
 				Path:   "/test2",
 				Mode:   "0644",
@@ -156,7 +157,7 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileWithFinalSHA256,
+				&testutil.SPDXDocSampleSingleFileGenerated,
 				{
 					FileName:           "/test2",
 					FileSPDXIdentifier: spdx.ElementID("File-/test2"),
@@ -167,6 +168,7 @@ var builerTests = []BuilderTest{
 						},
 					},
 					FileCopyrightText: "NOASSERTION",
+					FileComment:       "This file is included in the slice(s) test_slice; see Relationship information.",
 				},
 			},
 			Relationships: []*spdx.Relationship{
@@ -174,9 +176,10 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleSliceGeneratesFile,
 				{
-					RefA:         common.MakeDocElementID("", "Slice-test_slice"),
-					RefB:         common.MakeDocElementID("", "File-/test2"),
-					Relationship: "CONTAINS",
+					RefA:                common.MakeDocElementID("", "Slice-test_slice"),
+					RefB:                common.MakeDocElementID("", "File-/test2"),
+					Relationship:        "CONTAINS",
+					RelationshipComment: "File /test2 is included in the slice test_slice.",
 				},
 			},
 		},
@@ -209,10 +212,22 @@ var builerTests = []BuilderTest{
 					PackageSPDXIdentifier:   spdx.ElementID("Slice-test_slice2"),
 					FilesAnalyzed:           false,
 					PackageDownloadLocation: "NOASSERTION",
+					PackageComment:          "This slice is a sub-package of the package test; see Relationship information.",
 				},
 			},
 			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileNoFinalSHA256,
+				{
+					FileName:           "/test",
+					FileSPDXIdentifier: spdx.ElementID("File-/test"),
+					Checksums: []spdx.Checksum{
+						{
+							Algorithm: spdx.SHA256,
+							Value:     "sha256",
+						},
+					},
+					FileCopyrightText: "NOASSERTION",
+					FileComment:       "This file is included in the slice(s) test_slice, test_slice2; see Relationship information.",
+				},
 			},
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
@@ -224,12 +239,95 @@ var builerTests = []BuilderTest{
 				},
 				&testutil.SPDXRelSampleSingleSliceContainsFile,
 				{
-					RefA:         common.MakeDocElementID("", "Slice-test_slice2"),
-					RefB:         common.MakeDocElementID("", "File-/test"),
-					Relationship: "CONTAINS",
+					RefA:                common.MakeDocElementID("", "Slice-test_slice2"),
+					RefB:                common.MakeDocElementID("", "File-/test"),
+					Relationship:        "CONTAINS",
+					RelationshipComment: "File /test is included in the slice test_slice2.",
 				},
 			},
 		},
+	}, {
+		summary:      "Builds doc for symlink",
+		packageInfos: testutil.SampleSinglePackage,
+		sliceInfos:   testutil.SampleSingleSlice,
+		pathInfos:    testutil.SampleSinglePathLnk,
+		spdxDocument: spdx.Document{
+			SPDXVersion:    spdx.Version,
+			DataLicense:    spdx.DataLicense,
+			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
+			DocumentName:   "test",
+			Packages: []*spdx.Package{
+				&testutil.SPDXDocSampleSinglePackage,
+				&testutil.SPDXDocSampleSingleSlice,
+			},
+			Files: []*spdx.File{
+				&testutil.SPDXDocSampleSingleFileLnk,
+			},
+			Relationships: []*spdx.Relationship{
+				&testutil.SPDXRelSampleSingleDocDescribesPkg,
+				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+				&testutil.SPDXRelSampleSingleSliceContainsFile,
+			},
+		},
+	}, {
+		summary:      "Builds doc for hard link",
+		packageInfos: testutil.SampleSinglePackage,
+		sliceInfos:   testutil.SampleSingleSlice,
+		pathInfos:    testutil.SampleSinglePathHlk,
+		spdxDocument: spdx.Document{
+			SPDXVersion:    spdx.Version,
+			DataLicense:    spdx.DataLicense,
+			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
+			DocumentName:   "test",
+			Packages: []*spdx.Package{
+				&testutil.SPDXDocSampleSinglePackage,
+				&testutil.SPDXDocSampleSingleSlice,
+			},
+			Files: []*spdx.File{
+				&testutil.SPDXDocSampleSingleFileHlk,
+			},
+			Relationships: []*spdx.Relationship{
+				&testutil.SPDXRelSampleSingleDocDescribesPkg,
+				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+				&testutil.SPDXRelSampleSingleSliceContainsFile,
+			},
+		},
+	}, {
+		summary: "Cannot build doc for mutated symlink",
+		pathInfos: []builder.PathInfo{
+			{
+				Path:        "/test",
+				Mode:        "0644",
+				SHA256:      "sha256",
+				FinalSHA256: "final_sha256",
+				Link:        "/file",
+			},
+		},
+		error: "cannot build file section: invalid link: link /test has a final sha256",
+	}, {
+		summary: "Cannot build doc for mutated hard link",
+		pathInfos: []builder.PathInfo{
+			{
+				Path:        "/test",
+				Mode:        "0644",
+				SHA256:      "sha256",
+				FinalSHA256: "final_sha256",
+				Inode:       1,
+			},
+		},
+		error: "cannot build file section: invalid link: link /test has a final sha256",
+	}, {
+		summary: "Cannot build doc for invalid link",
+		pathInfos: []builder.PathInfo{
+			{
+				Path:   "/test",
+				Mode:   "0644",
+				SHA256: "sha256",
+				Link:   "/file",
+				Inode:  1,
+			},
+		},
+		error: "cannot build file section: invalid file type: file /test simultaneously has inode 1 and link /file",
 	},
 }
 
@@ -237,6 +335,10 @@ func (s *S) TestBuilder(c *C) {
 	for _, test := range builerTests {
 		c.Logf("Running test: %s", test.summary)
 		doc, err := builder.BuildSPDXDocument("test", &test.sliceInfos, &test.packageInfos, &test.pathInfos)
+		if test.error != "" {
+			c.Assert(err, ErrorMatches, test.error)
+			continue
+		}
 		c.Assert(err, IsNil)
 		c.Assert(doc, DeepEquals, &test.spdxDocument)
 	}

@@ -76,6 +76,8 @@ func (md *ManifestData) ProcessPaths() []builder.PathInfo {
 		pathInfo.Slices = p.Slices
 		pathInfo.SHA256 = p.SHA256
 		pathInfo.FinalSHA256 = p.FinalSHA256
+		pathInfo.Link = p.Link
+		pathInfo.Inode = p.Inode
 		pathInfos = append(pathInfos, pathInfo)
 	}
 	return pathInfos

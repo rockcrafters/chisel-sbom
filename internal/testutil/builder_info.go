@@ -29,7 +29,7 @@ var SampleSinglePathNoFinalSHA256 = []builder.PathInfo{
 	},
 }
 
-var SampleSinglePathWithFinalSHA256 = []builder.PathInfo{
+var SampleSinglePathModified = []builder.PathInfo{
 	{
 		Path:        "/test",
 		Mode:        "0644",
@@ -39,13 +39,33 @@ var SampleSinglePathWithFinalSHA256 = []builder.PathInfo{
 	},
 }
 
-var SampleSinglePathWithEmptyFileSHA256 = []builder.PathInfo{
+var SampleSinglePathGenerated = []builder.PathInfo{
 	{
 		Path:        "/test",
 		Mode:        "0644",
 		Slices:      []string{"test_slice"},
 		SHA256:      builder.EmptySHA256,
 		FinalSHA256: "final_sha256",
+	},
+}
+
+var SampleSinglePathLnk = []builder.PathInfo{
+	{
+		Path:   "/test",
+		Mode:   "0644",
+		Slices: []string{"test_slice"},
+		SHA256: "sha256",
+		Link:   "/file",
+	},
+}
+
+var SampleSinglePathHlk = []builder.PathInfo{
+	{
+		Path:   "/test",
+		Mode:   "0644",
+		Slices: []string{"test_slice"},
+		SHA256: "sha256",
+		Inode:  1,
 	},
 }
 
@@ -61,6 +81,7 @@ var SPDXDocSampleSinglePackage = spdx.Package{
 	},
 	PackageDownloadLocation: "NOASSERTION",
 	PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
+	PackageComment:          "This package includes one or more slice(s); see Relationship information.",
 }
 
 var SPDXDocSampleSingleSlice = spdx.Package{
@@ -68,6 +89,7 @@ var SPDXDocSampleSingleSlice = spdx.Package{
 	FilesAnalyzed:           false,
 	PackageDownloadLocation: "NOASSERTION",
 	PackageSPDXIdentifier:   spdx.ElementID("Slice-test_slice"),
+	PackageComment:          "This slice is a sub-package of the package test; see Relationship information.",
 }
 
 var SPDXDocSampleSingleFileNoFinalSHA256 = spdx.File{
@@ -80,9 +102,10 @@ var SPDXDocSampleSingleFileNoFinalSHA256 = spdx.File{
 		},
 	},
 	FileCopyrightText: "NOASSERTION",
+	FileComment:       "This file is included in the slice(s) test_slice; see Relationship information.",
 }
 
-var SPDXDocSampleSingleFileWithFinalSHA256 = spdx.File{
+var SPDXDocSampleSingleFileGenerated = spdx.File{
 	FileSPDXIdentifier: spdx.ElementID("File-/test"),
 	FileName:           "/test",
 	Checksums: []spdx.Checksum{
@@ -92,6 +115,46 @@ var SPDXDocSampleSingleFileWithFinalSHA256 = spdx.File{
 		},
 	},
 	FileCopyrightText: "NOASSERTION",
+	FileComment:       "This file is inflated by the slice mutation script in the slice test_slice; see Relationship information.",
+}
+
+var SPDXDocSampleSingleFileModified = spdx.File{
+	FileSPDXIdentifier: spdx.ElementID("File-/test"),
+	FileName:           "/test",
+	Checksums: []spdx.Checksum{
+		{
+			Algorithm: spdx.SHA256,
+			Value:     "final_sha256",
+		},
+	},
+	FileCopyrightText: "NOASSERTION",
+	FileComment:       "This file is mutated by the slice mutation script in the slice test_slice; see Relationship information.",
+}
+
+var SPDXDocSampleSingleFileLnk = spdx.File{
+	FileSPDXIdentifier: spdx.ElementID("File-/test"),
+	FileName:           "/test",
+	Checksums: []spdx.Checksum{
+		{
+			Algorithm: spdx.SHA256,
+			Value:     "sha256",
+		},
+	},
+	FileCopyrightText: "NOASSERTION",
+	FileComment:       "This file is a symlink to the file /file.",
+}
+
+var SPDXDocSampleSingleFileHlk = spdx.File{
+	FileSPDXIdentifier: spdx.ElementID("File-/test"),
+	FileName:           "/test",
+	Checksums: []spdx.Checksum{
+		{
+			Algorithm: spdx.SHA256,
+			Value:     "sha256",
+		},
+	},
+	FileCopyrightText: "NOASSERTION",
+	FileComment:       "This file is within the hard link group 1; files in the same hard link group are alias of each other.",
 }
 
 var SPDXRelSampleSingleDocDescribesPkg = spdx.Relationship{
@@ -107,19 +170,22 @@ var SPDXRelSampleSinglePkgContainsSlice = spdx.Relationship{
 }
 
 var SPDXRelSampleSingleSliceContainsFile = spdx.Relationship{
-	RefA:         common.MakeDocElementID("", "Slice-test_slice"),
-	RefB:         common.MakeDocElementID("", "File-/test"),
-	Relationship: "CONTAINS",
+	RefA:                common.MakeDocElementID("", "Slice-test_slice"),
+	RefB:                common.MakeDocElementID("", "File-/test"),
+	Relationship:        "CONTAINS",
+	RelationshipComment: "File /test is included in the slice test_slice.",
 }
 
 var SPDXRelSampleSingleSliceGeneratesFile = spdx.Relationship{
-	RefA:         common.MakeDocElementID("", "Slice-test_slice"),
-	RefB:         common.MakeDocElementID("", "File-/test"),
-	Relationship: "GENERATES",
+	RefA:                common.MakeDocElementID("", "Slice-test_slice"),
+	RefB:                common.MakeDocElementID("", "File-/test"),
+	Relationship:        "GENERATES",
+	RelationshipComment: "File /test is inflated by the slice mutation script in the slice test_slice.",
 }
 
 var SPDXRelSampleSingleFileModifiedBySlice = spdx.Relationship{
-	RefA:         common.MakeDocElementID("", "File-/test"),
-	RefB:         common.MakeDocElementID("", "Slice-test_slice"),
-	Relationship: "FILE_MODIFIED",
+	RefA:                common.MakeDocElementID("", "File-/test"),
+	RefB:                common.MakeDocElementID("", "Slice-test_slice"),
+	Relationship:        "FILE_MODIFIED",
+	RelationshipComment: "File /test is mutated by the slice mutation script in the slice test_slice.",
 }
