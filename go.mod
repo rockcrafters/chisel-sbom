@@ -1,6 +1,6 @@
 module github.com/rockcrafters/chisel-sbom
 
-go 1.23.4
+go 1.22
 
 require (
 	github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092 // indirect
