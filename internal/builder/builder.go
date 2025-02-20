@@ -144,7 +144,6 @@ func (s *SliceInfo) buildSliceSection() (*spdx.Package, *spdx.Relationship, erro
 
 const (
 	FileReg int = iota
-	FileGen
 	FileMod
 	FileLnk
 	FileHlk
@@ -152,8 +151,7 @@ const (
 
 var fileComments = map[int]string{
 	FileReg: "This file is included in the slice(s) %s; see Relationship information.",
-	FileGen: "This file is inflated by the slice mutation script in the slice %s; see Relationship information.",
-	FileMod: "This file is mutated by the slice mutation script in the slice %s; see Relationship information.",
+	FileMod: "This file is mutated by the slice %s; see Relationship information.",
 	FileLnk: "This file is a symlink to the file %s.",
 	FileHlk: "This file is within the hard link group %d; files in the same hard link group are alias of each other.",
 }
@@ -176,8 +174,7 @@ func (f *PathInfo) buildPathSection() (*spdx.File, []*spdx.Relationship, error) 
 	// File type  |  Inode  |  Link  |  FinalSHA256  |       SHA256
 	// ------------------------------------------------------------------
 	// Regular    |    0    |   ""   |       ""      |       != ""
-	// Generated  |    0    |   ""   |      != ""    |  == "e3b0c44..."
-	// Modified   |    0    |   ""   |      != ""    |  != "e3b0c44..."
+	// Modified   |    0    |   ""   |      != ""    |     (omitted)
 	// Link       |    0    |  != "" |       ""      |       == ""
 	// Hard link  |   != 0  |   ""   |       ""      |     (omitted)
 	// ------------------------------------------------------------------
@@ -197,11 +194,7 @@ func (f *PathInfo) buildPathSection() (*spdx.File, []*spdx.Relationship, error) 
 		if f.Inode > 0 || f.Link != "" {
 			return nil, nil, fmt.Errorf("cannot build file section: invalid link: link %s has a final sha256", f.Path)
 		}
-		if f.SHA256 == EmptySHA256 {
-			fileType = FileGen
-		} else {
-			fileType = FileMod
-		}
+		fileType = FileMod
 	}
 
 	slices := strings.Join(f.Slices, ", ")
@@ -210,9 +203,6 @@ func (f *PathInfo) buildPathSection() (*spdx.File, []*spdx.Relationship, error) 
 	case FileReg:
 		file.FileComment = fmt.Sprintf(fileComments[fileType], slices)
 		rln = createFileAllRln(f, "CONTAINS", false)
-	case FileGen:
-		file.FileComment = fmt.Sprintf(fileComments[fileType], slices)
-		rln = createFileAllRln(f, "GENERATES", false)
 	case FileMod:
 		file.FileComment = fmt.Sprintf(fileComments[fileType], slices)
 		rln = createFileAllRln(f, "FILE_MODIFIED", true)
@@ -231,8 +221,7 @@ func (f *PathInfo) buildPathSection() (*spdx.File, []*spdx.Relationship, error) 
 
 var fileRlnComments = map[string]string{
 	"CONTAINS":      "File %s is included in the slice %s.",
-	"GENERATES":     "File %s is inflated by the slice mutation script in the slice %s.",
-	"FILE_MODIFIED": "File %s is mutated by the slice mutation script in the slice %s.",
+	"FILE_MODIFIED": "File %s is mutated by the slice %s.",
 }
 
 func createFileAllRln(file *PathInfo, rel string, reverseRel bool) []*spdx.Relationship {

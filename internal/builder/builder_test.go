@@ -86,32 +86,6 @@ var builerTests = []BuilderTest{
 			},
 		},
 	}, {
-		summary:      "Builds file section with generated file",
-		packageInfos: testutil.SampleSinglePackage,
-		sliceInfos:   testutil.SampleSingleSlice,
-		pathInfos:    testutil.SampleSinglePathGenerated,
-		spdxDocument: spdx.Document{
-			SPDXVersion:    spdx.Version,
-			DataLicense:    spdx.DataLicense,
-			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
-			DocumentName:   "test",
-			Packages: []*spdx.Package{
-				&testutil.SPDXDocSampleSinglePackage,
-				&testutil.SPDXDocSampleSingleSlice,
-			},
-			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileGenerated,
-			},
-			Relationships: []*spdx.Relationship{
-				&testutil.SPDXRelSampleSingleDocDescribesPkg,
-				&testutil.SPDXRelSampleSinglePkgContainsSlice,
-				&testutil.SPDXRelSampleSingleSliceGeneratesFile,
-			},
-			CreationInfo: &spdx.CreationInfo{
-				Creators: builder.ChiselSbomDocCreator,
-			},
-		},
-	}, {
 		summary:      "Builds file section with modified file",
 		packageInfos: testutil.SampleSinglePackage,
 		sliceInfos:   testutil.SampleSingleSlice,
@@ -141,7 +115,7 @@ var builerTests = []BuilderTest{
 		summary:      "Builds doc for one slice with two files",
 		packageInfos: testutil.SampleSinglePackage,
 		sliceInfos:   testutil.SampleSingleSlice,
-		pathInfos: append(testutil.SampleSinglePathGenerated,
+		pathInfos: append(testutil.SampleSinglePathModified,
 			builder.PathInfo{
 				Path:   "/test2",
 				Mode:   "0644",
@@ -158,7 +132,7 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
-				&testutil.SPDXDocSampleSingleFileGenerated,
+				&testutil.SPDXDocSampleSingleFileModified,
 				{
 					FileName:           "/test2",
 					FileSPDXIdentifier: spdx.ElementID("File-/test2"),
@@ -175,7 +149,7 @@ var builerTests = []BuilderTest{
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
-				&testutil.SPDXRelSampleSingleSliceGeneratesFile,
+				&testutil.SPDXRelSampleSingleFileModifiedBySlice,
 				{
 					RefA:                common.MakeDocElementID("", "Slice-test_slice"),
 					RefB:                common.MakeDocElementID("", "File-/test2"),

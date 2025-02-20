@@ -114,13 +114,7 @@ var converterTests = []ConverterTest{
 				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
-				{
-					FileName:           "/test",
-					FileSPDXIdentifier: spdx.ElementID("File-/test"),
-					Checksums:          []spdx.Checksum{{Algorithm: spdx.SHA256, Value: "sha256"}},
-					FileCopyrightText:  "NOASSERTION",
-					FileComment:        "This file is included in the slice(s) test_slice; see Relationship information.",
-				},
+				&testutil.SPDXDocSampleSingleFileNoFinalSHA256,
 			},
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
@@ -149,13 +143,7 @@ var converterTests = []ConverterTest{
 				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
-				{
-					FileName:           "/test",
-					FileSPDXIdentifier: spdx.ElementID("File-/test"),
-					Checksums:          []spdx.Checksum{{Algorithm: spdx.SHA256, Value: "final_sha256"}},
-					FileCopyrightText:  "NOASSERTION",
-					FileComment:        "This file is mutated by the slice mutation script in the slice test_slice; see Relationship information.",
-				},
+				&testutil.SPDXDocSampleSingleFileModified,
 			},
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,

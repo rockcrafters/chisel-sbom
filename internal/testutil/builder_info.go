@@ -39,16 +39,6 @@ var SampleSinglePathModified = []builder.PathInfo{
 	},
 }
 
-var SampleSinglePathGenerated = []builder.PathInfo{
-	{
-		Path:        "/test",
-		Mode:        "0644",
-		Slices:      []string{"test_slice"},
-		SHA256:      builder.EmptySHA256,
-		FinalSHA256: "final_sha256",
-	},
-}
-
 var SampleSinglePathLnk = []builder.PathInfo{
 	{
 		Path:   "/test",
@@ -106,19 +96,6 @@ var SPDXDocSampleSingleFileNoFinalSHA256 = spdx.File{
 	FileComment:       "This file is included in the slice(s) test_slice; see Relationship information.",
 }
 
-var SPDXDocSampleSingleFileGenerated = spdx.File{
-	FileSPDXIdentifier: spdx.ElementID("File-/test"),
-	FileName:           "/test",
-	Checksums: []spdx.Checksum{
-		{
-			Algorithm: spdx.SHA256,
-			Value:     "final_sha256",
-		},
-	},
-	FileCopyrightText: "NOASSERTION",
-	FileComment:       "This file is inflated by the slice mutation script in the slice test_slice; see Relationship information.",
-}
-
 var SPDXDocSampleSingleFileModified = spdx.File{
 	FileSPDXIdentifier: spdx.ElementID("File-/test"),
 	FileName:           "/test",
@@ -129,7 +106,7 @@ var SPDXDocSampleSingleFileModified = spdx.File{
 		},
 	},
 	FileCopyrightText: "NOASSERTION",
-	FileComment:       "This file is mutated by the slice mutation script in the slice test_slice; see Relationship information.",
+	FileComment:       "This file is mutated by the slice test_slice; see Relationship information.",
 }
 
 var SPDXDocSampleSingleFileLnk = spdx.File{
@@ -177,16 +154,9 @@ var SPDXRelSampleSingleSliceContainsFile = spdx.Relationship{
 	RelationshipComment: "File /test is included in the slice test_slice.",
 }
 
-var SPDXRelSampleSingleSliceGeneratesFile = spdx.Relationship{
-	RefA:                common.MakeDocElementID("", "Slice-test_slice"),
-	RefB:                common.MakeDocElementID("", "File-/test"),
-	Relationship:        "GENERATES",
-	RelationshipComment: "File /test is inflated by the slice mutation script in the slice test_slice.",
-}
-
 var SPDXRelSampleSingleFileModifiedBySlice = spdx.Relationship{
 	RefA:                common.MakeDocElementID("", "File-/test"),
 	RefB:                common.MakeDocElementID("", "Slice-test_slice"),
 	Relationship:        "FILE_MODIFIED",
-	RelationshipComment: "File /test is mutated by the slice mutation script in the slice test_slice.",
+	RelationshipComment: "File /test is mutated by the slice test_slice.",
 }
