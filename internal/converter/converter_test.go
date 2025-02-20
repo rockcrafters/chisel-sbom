@@ -7,8 +7,8 @@ import (
 	"github.com/canonical/chisel/public/manifest"
 	"github.com/rockcrafters/chisel-sbom/internal/builder"
 	"github.com/rockcrafters/chisel-sbom/internal/converter"
+	"github.com/rockcrafters/chisel-sbom/internal/testutil"
 	"github.com/spdx/tools-golang/spdx"
-	"github.com/spdx/tools-golang/spdx/v2/common"
 	. "gopkg.in/check.v1"
 )
 
@@ -110,21 +110,8 @@ var converterTests = []ConverterTest{
 			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
 			DocumentName:   "test",
 			Packages: []*spdx.Package{
-				{
-					PackageName:             "test",
-					PackageVersion:          "1.0",
-					PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
-					FilesAnalyzed:           false,
-					PackageDownloadLocation: "NOASSERTION",
-					PackageChecksums:        []spdx.Checksum{{Algorithm: spdx.SHA256, Value: "sha256"}},
-					PackageComment:          "This package includes one or more slice(s); see Relationship information.",
-				}, {
-					PackageName:             "test_slice",
-					PackageSPDXIdentifier:   spdx.ElementID("Slice-test_slice"),
-					FilesAnalyzed:           false,
-					PackageDownloadLocation: "NOASSERTION",
-					PackageComment:          "This slice is a sub-package of the package test; see Relationship information.",
-				},
+				&testutil.SPDXDocSampleSinglePackage,
+				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
 				{
@@ -136,20 +123,12 @@ var converterTests = []ConverterTest{
 				},
 			},
 			Relationships: []*spdx.Relationship{
-				{
-					RefA:         common.MakeDocElementID("", "DOCUMENT"),
-					RefB:         common.MakeDocElementID("", "Package-test"),
-					Relationship: "DESCRIBES",
-				}, {
-					RefA:         common.MakeDocElementID("", "Package-test"),
-					RefB:         common.MakeDocElementID("", "Slice-test_slice"),
-					Relationship: "CONTAINS",
-				}, {
-					RefA:                common.MakeDocElementID("", "Slice-test_slice"),
-					RefB:                common.MakeDocElementID("", "File-/test"),
-					Relationship:        "CONTAINS",
-					RelationshipComment: "File /test is included in the slice test_slice.",
-				},
+				&testutil.SPDXRelSampleSingleDocDescribesPkg,
+				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+				&testutil.SPDXRelSampleSingleSliceContainsFile,
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
@@ -166,21 +145,8 @@ var converterTests = []ConverterTest{
 			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
 			DocumentName:   "test",
 			Packages: []*spdx.Package{
-				{
-					PackageName:             "test",
-					PackageVersion:          "1.0",
-					PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
-					FilesAnalyzed:           false,
-					PackageDownloadLocation: "NOASSERTION",
-					PackageChecksums:        []spdx.Checksum{{Algorithm: spdx.SHA256, Value: "sha256"}},
-					PackageComment:          "This package includes one or more slice(s); see Relationship information.",
-				}, {
-					PackageName:             "test_slice",
-					PackageSPDXIdentifier:   spdx.ElementID("Slice-test_slice"),
-					FilesAnalyzed:           false,
-					PackageDownloadLocation: "NOASSERTION",
-					PackageComment:          "This slice is a sub-package of the package test; see Relationship information.",
-				},
+				&testutil.SPDXDocSampleSinglePackage,
+				&testutil.SPDXDocSampleSingleSlice,
 			},
 			Files: []*spdx.File{
 				{
@@ -192,20 +158,12 @@ var converterTests = []ConverterTest{
 				},
 			},
 			Relationships: []*spdx.Relationship{
-				{
-					RefA:         common.MakeDocElementID("", "DOCUMENT"),
-					RefB:         common.MakeDocElementID("", "Package-test"),
-					Relationship: "DESCRIBES",
-				}, {
-					RefA:         common.MakeDocElementID("", "Package-test"),
-					RefB:         common.MakeDocElementID("", "Slice-test_slice"),
-					Relationship: "CONTAINS",
-				}, {
-					RefA:                common.MakeDocElementID("", "File-/test"),
-					RefB:                common.MakeDocElementID("", "Slice-test_slice"),
-					Relationship:        "FILE_MODIFIED",
-					RelationshipComment: "File /test is mutated by the slice mutation script in the slice test_slice.",
-				},
+				&testutil.SPDXRelSampleSingleDocDescribesPkg,
+				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+				&testutil.SPDXRelSampleSingleFileModifiedBySlice,
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	},

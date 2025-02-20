@@ -82,6 +82,7 @@ var SPDXDocSampleSinglePackage = spdx.Package{
 	PackageDownloadLocation: "NOASSERTION",
 	PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
 	PackageComment:          "This package includes one or more slice(s); see Relationship information.",
+	PackageSupplier:         &builder.UbuntuPackageSupplier,
 }
 
 var SPDXDocSampleSingleSlice = spdx.Package{

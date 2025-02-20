@@ -30,12 +30,22 @@ type SliceInfo struct {
 	Name string
 }
 
+var ChiselSbomDocCreator = []common.Creator{
+	{
+		Creator:     "Chisel SBOM Exporter ()",
+		CreatorType: "Tool",
+	},
+}
+
 func BuildSPDXDocument(docName string, sliceInfos *[]SliceInfo, packageInfos *[]PackageInfo, pathInfos *[]PathInfo) (*spdx.Document, error) {
 	doc := &spdx.Document{
 		SPDXVersion:    spdx.Version,
 		DataLicense:    spdx.DataLicense,
 		SPDXIdentifier: spdx.ElementID("DOCUMENT"),
 		DocumentName:   docName,
+		CreationInfo: &spdx.CreationInfo{
+			Creators: ChiselSbomDocCreator,
+		},
 	}
 
 	// Add packages
@@ -83,6 +93,11 @@ func (p *PathInfo) SPDXId() string {
 	return fmt.Sprintf("File-%s", p.Path)
 }
 
+var UbuntuPackageSupplier = common.Supplier{
+	SupplierType: "Person",
+	Supplier:     "Ubuntu Developers <ubuntu-devel-discuss@lists.ubuntu.com>",
+}
+
 func (p *PackageInfo) buildPackageSection() (*spdx.Package, *spdx.Relationship, error) {
 	pkg := &spdx.Package{
 		PackageName:             p.Name,
@@ -92,6 +107,7 @@ func (p *PackageInfo) buildPackageSection() (*spdx.Package, *spdx.Relationship, 
 		PackageDownloadLocation: "NOASSERTION",
 		FilesAnalyzed:           false,
 		PackageComment:          "This package includes one or more slice(s); see Relationship information.",
+		PackageSupplier:         &UbuntuPackageSupplier,
 	}
 
 	rln := &spdx.Relationship{

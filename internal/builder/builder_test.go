@@ -26,27 +26,16 @@ var builerTests = []BuilderTest{
 			DataLicense:    spdx.DataLicense,
 			SPDXIdentifier: spdx.ElementID("DOCUMENT"),
 			DocumentName:   "test",
-			Packages: []*spdx.Package{
-				{
-					PackageName:    "test",
-					PackageVersion: "1.0",
-					PackageChecksums: []spdx.Checksum{
-						{
-							Algorithm: spdx.SHA256,
-							Value:     "sha256",
-						},
-					},
-					PackageDownloadLocation: "NOASSERTION",
-					PackageSPDXIdentifier:   spdx.ElementID("Package-test"),
-					PackageComment:          "This package includes one or more slice(s); see Relationship information.",
-				},
-			},
+			Packages:       []*spdx.Package{&testutil.SPDXDocSampleSinglePackage},
 			Relationships: []*spdx.Relationship{
 				{
 					RefA:         common.MakeDocElementID("", "DOCUMENT"),
 					RefB:         common.MakeDocElementID("", "Package-test"),
 					Relationship: "DESCRIBES",
 				},
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
@@ -65,6 +54,9 @@ var builerTests = []BuilderTest{
 			Relationships: []*spdx.Relationship{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
@@ -89,6 +81,9 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleSliceContainsFile,
 			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
+			},
 		},
 	}, {
 		summary:      "Builds file section with generated file",
@@ -112,6 +107,9 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleSliceGeneratesFile,
 			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
+			},
 		},
 	}, {
 		summary:      "Builds file section with modified file",
@@ -134,6 +132,9 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleFileModifiedBySlice,
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
@@ -181,6 +182,9 @@ var builerTests = []BuilderTest{
 					Relationship:        "CONTAINS",
 					RelationshipComment: "File /test2 is included in the slice test_slice.",
 				},
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
@@ -245,6 +249,9 @@ var builerTests = []BuilderTest{
 					RelationshipComment: "File /test is included in the slice test_slice2.",
 				},
 			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
+			},
 		},
 	}, {
 		summary:      "Builds doc for symlink",
@@ -268,6 +275,9 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleSliceContainsFile,
 			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
+			},
 		},
 	}, {
 		summary:      "Builds doc for hard link",
@@ -290,6 +300,9 @@ var builerTests = []BuilderTest{
 				&testutil.SPDXRelSampleSingleDocDescribesPkg,
 				&testutil.SPDXRelSampleSinglePkgContainsSlice,
 				&testutil.SPDXRelSampleSingleSliceContainsFile,
+			},
+			CreationInfo: &spdx.CreationInfo{
+				Creators: builder.ChiselSbomDocCreator,
 			},
 		},
 	}, {
