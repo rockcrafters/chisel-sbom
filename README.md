@@ -1,3 +1,6 @@
+This repository is archived and moved to [canonical/ssbom](https://github.com/canonical/ssbom).
+
+
 # The Chisel SBOM Exporter
 
 This project generates a Software Bill of Materials (SBOM) for Chisel projects.
